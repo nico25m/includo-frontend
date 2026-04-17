@@ -26,7 +26,14 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      
+      if (apiUrl && !apiUrl.startsWith('http')) {
+        apiUrl = `https://${apiUrl}`;
+      }
+
+      console.log("Tentativo di connessione a:", `${apiUrl}/api/chat`);
+
       const response = await fetch(`${apiUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,7 +51,9 @@ export default function Chat() {
       }
 
       if (!response.ok) {
-        throw new Error("Errore nella risposta del server");
+        const errorText = await response.text();
+        console.error("Dettagli errore server:", errorText);
+        throw new Error(`Errore server (${response.status} ${response.statusText})`);
       }
 
       const reader = response.body.getReader();
